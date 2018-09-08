@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.panda.project.device.dao.DeviceMapper">
+	<select id="findAllDevices" resultType="int">
+		select count(*) from t_t_device
+	</select>
+	<select id="findPartDevices" parameterType="map" resultType="int">
+		select count(*) from t_t_device
+		<where>
+			<trim suffixOverrides="and">
+					<if test="map.name != null and map.name != ''">
+						dvname LIKE concat(concat('%',#{map.name}),'%') and
+					</if>
+					<if test="map.dvtypecode != null and map.dvtypecode != ''">
+						dvtypecode = #{map.dvtypecode} and
+					</if>
+				</trim> 
+		</where>
+	</select>
+	<select id="findPageDevices" parameterType="map" resultType="Device">
+		select td.id as id, 
+		td.dvid as dvid, 
+		td.dvname as dvname, 
+		td.dvtypecode as dvtypecode, 
+		td.dvtotaltime as dvtotaltime, 
+		td.dvnum as dvusetimes,
+		td.dvbelong as dvbelong, 
+		th.hpname as dvbelong_name, 
+		td.app_version as app_version, 
+		td.android_version as android_version, 
+		td.MAC_address as MAC_address, 
+		td.ip_address as ip_address, 
+		td.sim_code as sim_code, 
+		td.imei_code as imei_code, 
+		td.brand_pad as brand_pad from t_t_device td 
+		left join t_t_hospital th on
+		td.dvbelong = th.id
+		<where>
+			<trim suffixOverrides="and">
+					<if test="map.name != null and map.name != ''">
+						dvname LIKE concat(concat('%',#{map.name}),'%') and
+					</if>
+					<if test="map.dvtypecode != null and map.dvtypecode != ''">
+						dvtypecode = #{map.dvtypecode} and
+					</if>
+				</trim> 
+		</where>
+		order by id
+		limit #{map.start},#{map.end}
+	</select>
+	<select id="getDeviceUseRecords" parameterType="map" resultType="Device">
+		select  id as id, 
+		dvid as dvid,
+		begintime as starttime,
+		endtime as endtime,
+		usednum as used_num,
+		createtime as createtime
+		from t_t_device_info  
+		order by id
+		limit #{map.start},#{map.end}
+	</select>
+	<select id="findDeviceByDvid" parameterType="String" resultType="Device">
+		select id, dvid, dvname, dvtypecode, dvtotaltime
+		, dvbelong, app_version, android_version, MAC_address
+		, ip_address, sim_code, imei_code, brand_pad from t_t_device
+		<where> dvid = 
+			<if test="dvid != null and dvid != ''">
+				#{dvid}
+			</if>
+			<if test="dvid == null or dvid == ''">
+				'0'
+			</if>
+		</where>
+	</select>
+	
+	<insert id="addDevice" parameterType="Device">
+		insert into t_t_device(
+		dvid, 
+		dvname,
+		dvtypecode, 
+		dvtotaltime, 
+		dvbelong, 
+		app_version, 
+		android_version, 
+		MAC_address, 
+		ip_address, 
+		sim_code, 
+		imei_code, 
+		brand_pad,
+		dvnum,
+		createtime)
+		values
+		(#{device.dvid},
+		#{device.dvname},
+		#{device.dvtypecode},
+		0,
+		#{device.dvbelong},
+		#{device.app_version},
+		#{device.android_version},
+		#{device.MAC_address},
+		#{device.ip_address},
+		#{device.sim_code},
+		#{device.imei_code},
+		#{device.brand_pad},
+		0,
+		DATE_FORMAT(now(),'%Y-%m-%d %H:%i:%s'))
+	</insert>
+	<update id="editDevice" parameterType="Device">
+		update t_t_device set 
+		<if test="device.dvid != null and device.dvid != ''">
+			dvid = #{device.dvid},
+		</if>
+		<if test="device.dvname != null and device.dvname != ''">
+			dvname = #{device.dvname},
+		</if>
+		<if test="device.dvtypecode != null and device.dvtypecode != ''">
+			dvtypecode = #{device.dvtypecode},
+		</if>
+		<if test="device.dvtotaltime != null and device.dvtotaltime != ''">
+			dvtotaltime = #{device.dvtotaltime},
+		</if>
+		<if test="device.dvbelong != null and device.dvbelong != ''">
+			dvbelong = #{device.dvbelong},
+		</if>
+		<if test="device.app_version != null and device.app_version != ''">
+			app_version = #{device.app_version},
+		</if>
+		<if test="device.android_version != null and device.android_version != ''">
+			android_version = #{device.android_version},
+		</if>
+		<if test="device.MAC_address != null and device.MAC_address != ''">
+			MAC_address = #{device.MAC_address},
+		</if>
+		<if test="device.ip_address != null and device.ip_address != ''">
+			ip_address = #{device.ip_address},
+		</if>
+		<if test="device.sim_code != null and device.sim_code != ''">
+			sim_code = #{device.sim_code},
+		</if>
+		<if test="device.imei_code != null and device.imei_code != ''">
+			imei_code = #{device.imei_code},
+		</if>
+		<if test="device.brand_pad != null and device.brand_pad != ''">
+			brand_pad = #{device.brand_pad},
+		</if>
+		updatetime = DATE_FORMAT(now(),'%Y-%m-%d %H:%i:%s')
+		<where>
+			<if test="device.id != null and device.id != ''">
+				id = #{device.id}
+			</if>
+			<if test="device.id == null or device.id == ''">
+				id = 0
+			</if>
+		</where> 
+	</update>
+	
+	<delete id="deleteDevice" parameterType="int">
+		delete from t_t_device where id 
+		<if test="ids != null and ids != ''">
+		in  <foreach item="ids" collection="ids" open="(" separator="," close=")">
+            	#{ids}
+        	</foreach>
+        </if>
+		<if test="ids == null or ids == ''">
+		 = 0
+        </if>
+	</delete>
+</mapper>

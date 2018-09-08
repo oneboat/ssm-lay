@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.panda.system.dao.RoleMapper">
+	<select id="findPageRoles" parameterType="map" resultType="Role">
+		select id,rolename,rolecode,pid,rlevel as level,status,createtime from t_t_role
+		<where>
+			<trim suffixOverrides="and">
+					<if test="map.name != null and map.name != ''">
+						rolename LIKE concat(concat('%',#{map.name}),'%') and
+					</if>
+					<if test="map.level != null and map.level != ''">
+						rlevel = #{map.plevel} and
+					</if>
+				</trim> 
+		</where>
+		order by id
+		limit #{map.start},#{map.end}
+	</select>
+	<select id="findPartRoles" parameterType="map" resultType="int">
+		select count(*) from t_t_role
+		<where>
+			<trim suffixOverrides="and">
+					<if test="map.name != null and map.name != ''">
+						name LIKE concat(concat('%',#{map.name}),'%') and
+					</if>
+					<if test="map.level != null and map.level != ''">
+						rlevel = #{map.level} and
+					</if>
+				</trim> 
+		</where>
+	</select>
+	<select id="findAllRolers" resultType="int">
+		select count(*) from t_t_role
+	</select>
+	<select id="findAllRoles" resultType="Role">
+		select id,rolename,rolecode,pid,rlevel from t_t_role
+	</select>
+	<select id="findRoleByRolecode" resultType="Role" parameterType="String">
+		select id,rolename,rolecode,pid,rlevel from t_t_role
+	</select>
+	<update id="editRole" parameterType="Role">
+		update t_t_role set
+		<trim suffixOverrides=",">
+			<if test="role.rolename != null and role.rolename != ''">
+				rolename = #{role.rolename},
+			</if>
+			<if test="role.rolecode != null and role.rolecode != ''">
+				rolecode = #{role.rolecode},
+			</if>
+			<if test="role.level != null and role.level != ''">
+				rlevel = #{role.level},
+			</if>
+			<if test="role.pid != null and role.pid != ''">
+				pid = #{role.pid},
+			</if>
+			<if test="role.status != null and role.status != ''">
+				status = #{role.status},
+			</if>
+			updatetime = DATE_FORMAT(now(),'%Y-%m-%d %H:%i:%s')
+		</trim>
+		<where>
+			id = 
+			<if test="role.id != null and role.id != ''">
+				#{role.id}
+			</if>
+			<if test="role.id == null and role.id == ''">
+				0
+			</if>
+		</where>
+	</update>
+	<insert id="addRole" parameterType="Role">
+		insert into t_t_role
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="role.rolename != null and role.rolename != ''">
+				rolename,
+			</if>
+			<if test="role.rolecode != null and role.rolecode != ''">
+				rolecode,
+			</if>
+			<if test="role.level != null and role.level != ''">
+				rlevel,
+			</if>
+			<if test="role.pid != null and role.pid != ''">
+				pid,
+			</if>
+			<if test="role.status != null and role.status != ''">
+				status,
+			</if>
+			createtime
+		</trim>
+		values
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="role.rolename != null and role.rolename != ''">
+				#{role.rolename},
+			</if>
+			<if test="role.rolecode != null and role.rolecode != ''">
+				#{role.rolecode},
+			</if>
+			<if test="role.level != null and role.level != ''">
+				#{role.level},
+			</if>
+			<if test="role.pid != null and role.pid != ''">
+				#{role.pid},
+			</if>
+			<if test="role.status != null and role.status != ''">
+				#{role.status},
+			</if>
+			DATE_FORMAT(now(),'%Y-%m-%d %H:%i:%s')
+		</trim>
+	</insert>
+</mapper>

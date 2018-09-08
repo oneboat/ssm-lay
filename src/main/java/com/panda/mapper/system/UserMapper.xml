@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.panda.system.dao.UserMapper">
+	<!-- 添加用户注册 -->
+	<insert id="addUser" parameterType="map">
+		call addUser(#{map.user_name},#{map.user_email},#{map.user_password},#{map.user_ident},#{map.user_identnum})
+	</insert>
+	<!-- 添加用户 -->
+	<insert id="addUserOnly" parameterType="User"  useGeneratedKeys="true" keyProperty="user.id">
+		insert into t_t_user(username,name,password,age,phone,address,email,ident,cardid,identnum,createtime)values
+		(#{user.username},#{user.name},#{user.password},#{user.age},#{user.phone},#{user.address},#{user.email},#{user.ident},#{user.cardid},#{user.identnum},#{user.createTime})
+	</insert>
+	<!-- 绑定用户角色 -->
+	<insert id="bindRoleforUser" parameterType="map">
+		insert into t_t_user_role(user_id,role_id,status,createtime)values(#{map.uid},#{map.rid},1,#{map.createTime}))
+	</insert>
+	<!-- 绑定用户角色 -->
+	<insert id="addUserRoles" parameterType="map">
+		insert into t_t_user_role(user_id,role_id,status,createtime)values(#{map.uid},#{map.rid},1,#{map.createTime})
+	</insert>
+	<!-- 获取最新插入数据，不建议使用 -->
+	<select id="getNewUser" resultType="User" >
+		select username,name,password,age,phone,address,email,ident,cardid from t_t_user where id=( select max(id) from t_t_user)
+	</select>
+	<!--  -->
+	<select id="findUserByUsername" resultType="User" >
+		select username,name,password,age,phone,address,email,ident,cardid from t_t_user where username=#{username}
+	</select>
+	<!--  -->
+	<select id="findRolesByUid" resultType="Role"  parameterType="int">
+		select id,rolename,rolecode,pid,rlevel as level from t_t_role where id in ( select role_id as id  from t_t_user_role where user_id = #{uid})
+	</select>
+	<delete id="deleteUser" parameterType="java.lang.String">
+		delete from t_t_user where username 
+		<if test="ids != null and ids != ''">
+		in  <foreach item="ids" collection="ids" open="(" separator="," close=")">
+            	#{ids}
+        	</foreach>
+        </if>
+		<if test="ids == null or ids == ''">
+		 = 'unexists'
+        </if>
+        
+	</delete>
+	<delete id="deleteUserRoles" parameterType="java.lang.String">
+		delete from t_t_user_role where user_id in(
+			select id from t_t_user where username 
+			<if test="arrayStr != null and arrayStr != ''">
+			in  <foreach item="arrayStr" collection="arrayStr" open="(" separator="," close=")">
+	            	#{arrayStr}
+	        	</foreach>
+	        </if>
+        )
+	</delete>
+	<!--  -->
+	<select id="findUserRoles" parameterType="java.lang.String" resultType="int">
+	    select count(1) from t_t_user_role where user_id in(
+			select id from t_t_user where username 
+			<if test="arrayStr != null and arrayStr != ''">
+			in  <foreach item="arrayStr" collection="arrayStr" open="(" separator="," close=")">
+	            	#{arrayStr}
+	        	</foreach>
+	        </if>
+        )
+	</select>
+	<!-- 查找用户 -->
+	<select id="findAllUsersByPage" resultType="User" parameterType="map">
+		select tu.id as id, tu.username as username,tu.cardid as cardid,tu.name as name,tu.age as age,tu.phone as phone,tu.address as address,tr.rolename as ident,
+		tu.email as email,tur.role_id as identnum,DATE_FORMAT(tu.createtime,'%Y-%m-%d %H:%i:%s') as createTime from t_t_user tu 
+		left join t_t_user_role tur on tu.id = tur.user_id 
+		left join t_t_role tr on tur.role_id = tr.id
+			<where>
+				<trim suffixOverrides="and">
+					tu.id > 1 and
+					<if test="map.name != null and map.name != ''">
+						name LIKE concat(concat('%',#{map.name}),'%') and
+					</if>
+					<if test="map.address != null and map.address != ''">
+						address LIKE concat(concat('%',#{map.address}),'%') and
+					</if>
+				</trim> 
+			</where>
+			order by tu.id
+			limit #{map.start},#{map.rows}
+	</select>
+	<!-- 查找用户 -->
+	<select id="findAllUsers" resultType="User">
+		select username,name,password,age,phone,address,email,ident,cardid from t_t_user where id > 1
+	</select>
+	<!-- 查找用户 -->
+	<select id="findUserById" parameterType="int" resultType="User" >
+		select tu.username,tu.name,tu.age,tu.phone,tu.address,tr.rolename as ident,tu.email from t_t_user tu 
+		left join t_t_user_role tur on tu.id = tur.user_id 
+		left join t_t_role tr on tur.role_id = tr.id
+		where tu.id = #{id}
+	</select>
+	<!-- 根据条件查找用户 -->
+	<select id="findPartUsers" resultType="User" parameterType="map">
+		select tu.username,tu.name,tu.age,tu.phone,tu.address,tr.rolename as ident,tu.email from t_t_user tu 
+		inner join t_t_user_role tur on tu.id = tur.user_id 
+		inner join t_t_role tr on tur.role_id = tr.id
+		<where>
+			<trim suffixOverrides="and">
+			    tu.id > 1 and
+				<if test="map.name != null and map.name != ''">
+					name LIKE concat(concat('%',#{map.name}),'%') and
+				</if>
+				<if test="map.address != null and map.address != ''">
+					address LIKE concat(concat('%',#{map.address}),'%') and
+				</if>
+			</trim>
+		</where>
+	</select>
+	<!-- 查找密码 -->
+	<select id="findUserPassword" parameterType="String" resultType="User" >
+		select tu.id,tu.username,tu.name,tu.password,tu.age,tu.phone,tu.address,tr.rolename as ident,tu.email from t_t_user tu 
+		left join t_t_user_role tur on tu.id = tur.user_id 
+		left join t_t_role tr on tur.role_id = tr.id 
+		where username = #{username}
+	</select>
+	<update id="editUser" parameterType="User">
+		update t_t_user set 
+		<if test="user.age != null and user.age != ''">
+			age = #{user.age},
+		</if>
+		<if test="user.phone != null and user.phone != ''">
+			phone = #{user.phone},
+		</if>
+		<if test="user.address != null and user.address != ''">
+			address = #{user.address},
+		</if>
+		<if test="user.cardid != null and user.cardid != ''">
+			cardid = #{user.cardid},
+		</if>
+		<if test="user.email != null and user.email != ''">
+			email = #{user.email},
+		</if>
+		<if test="user.name != null and user.name != ''">
+			name = #{user.name},
+		</if>
+		updatetime = DATE_FORMAT(now(),'%Y-%m-%d %H:%i:%s'),
+		<where>
+			id = #{user.id}
+		</where> 
+	</update>
+	<update id="resetPassword" parameterType="User">
+		update t_t_user set 
+		password = #{user.password}
+		<where>
+			id = #{user.id}
+		</where> 
+	</update>
+</mapper>

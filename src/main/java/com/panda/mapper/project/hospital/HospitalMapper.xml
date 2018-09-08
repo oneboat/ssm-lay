@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.panda.project.hospital.dao.HospitalMapper">
+	<select id="findAllHospitals" resultType="int">
+		select count(*) from t_t_hospital
+	</select>
+	<select id="findPartHospitals" parameterType="map" resultType="int">
+		select count(*) from t_t_hospital
+		<where>
+			<trim suffixOverrides="and">
+					<if test="map.name != null and map.name != ''">
+						hpname LIKE concat(concat('%',#{map.name}),'%') and
+					</if>
+					<if test="map.address != null and map.address != ''">
+						addressDetail = #{map.address} and
+					</if>
+				</trim> 
+		</where>
+	</select>
+	<select id="findPageHospitals" parameterType="map" resultType="Hospital">
+		select id,hpname,hpcode,cardid,addressdetail,hptel,hpcontact,hpemail,createtime,updatetime from t_t_hospital
+		<where>
+			<trim suffixOverrides="and">
+					<if test="map.name != null and map.name != ''">
+						hpname LIKE concat(concat('%',#{map.name}),'%') and
+					</if>
+					<if test="map.address != null and map.addressl != ''">
+						addressdetail LIKE concat(concat('%',#{map.address}),'%') and
+					</if>
+				</trim> 
+		</where>
+		order by id
+		limit #{map.start},#{map.end}
+	</select>
+	<select id="getAllHospitals" resultType="Hospital">
+		select id,hpname,hpcode,cardid,addressdetail,hptel,hpcontact,hpemail,createtime,updatetime from t_t_hospital
+	</select>
+	<insert id="addHospital" parameterType="Hospital">
+		insert into t_t_hospital(hpname,hpcode,cardid,addressdetail,hptel,hpcontact,hpemail,createtime)
+		values(#{hospital.hpname},#{hospital.hpcode},#{hospital.cardid},#{hospital.addressDetail},#{hospital.hptel}
+		,#{hospital.hpcontact},#{hospital.hpemail},DATE_FORMAT(now(),'%Y-%m-%d %H:%i:%s'))
+		
+	</insert>
+	<select id="findHospitalByUsercode" parameterType="String">
+		select id,hpname,hpcode,cardid,addressdetail,hptel,hpcontact,hpemail,createtime,updatetime from t_t_hospital
+		where hpcode = #{hpcode}
+	</select>
+	<update id="editHospitalToNew" parameterType="Hospital">
+		update t_t_hospital set 
+		<if test="hospital.hpname != null and hospital.hpname != ''">
+			hpname = #{hospital.hpname},
+		</if>
+		<if test="hospital.hpcode != null and hospital.hpcode != ''">
+			hpcode = #{hospital.hpcode},
+		</if>
+		<if test="hospital.cardid != null and hospital.cardid != ''">
+			cardid = #{hospital.cardid},
+		</if>
+		<if test="hospital.addressDetail != null and hospital.addressDetail != ''">
+			addressdetail = #{hospital.addressDetail},
+		</if>
+		<if test="hospital.hptel != null and hospital.hptel != ''">
+			hptel = #{hospital.hptel},
+		</if>
+		<if test="hospital.hpcontact != null and hospital.hpcontact != ''">
+			hpcontact = #{hospital.hpcontact},
+		</if>
+		<if test="hospital.hpemail != null and hospital.hpemail != ''">
+			hpemail = #{hospital.hpemail},
+		</if>
+		updatetime = DATE_FORMAT(now(),'%Y-%m-%d %H:%i:%s')
+		<where>
+			<if test="hospital.id != null and hospital.id != ''">
+				id = #{hospital.id}
+			</if>
+			<if test="hospital.id == null or hospital.id == ''">
+				id = 0
+			</if>
+		</where> 
+	</update>
+	
+	<delete id="deleteHospital" parameterType="int">
+		delete from t_t_hospital where id 
+		<if test="ids != null and ids != ''">
+		in  <foreach item="ids" collection="ids" open="(" separator="," close=")">
+            	#{ids}
+        	</foreach>
+        </if>
+		<if test="ids == null or ids == ''">
+		 = 0
+        </if>
+        
+	</delete>
+</mapper>

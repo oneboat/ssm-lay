@@ -1,0 +1,19 @@
+package com.panda.realm;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
+
+public class MyFilterChains extends ShiroFilterFactoryBean{
+	@Override
+	public void setFilterChainDefinitionMap(Map<String, String> filterChainDefinitionMap) {
+		Map<String,String> filter = new HashMap<String, String>();
+		filter.put("/admin.jsp", "authc");
+		filter.put("/index.jsp", "anon");
+		filter.put("/show.addStudent.do", "perms[P001_002_001_add]");
+		filter.put("/system/**", "roleOrFilter[R001,R002]");
+		filter.put("/**", "anon");
+		super.setFilterChainDefinitionMap(filter);
+	}
+}

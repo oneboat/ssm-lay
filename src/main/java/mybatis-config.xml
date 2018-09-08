@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<typeAliases>
+		<!-- 别名 -->
+		<package name="com.panda.system.model"></package>
+		<package name="com.panda.project.device.model"></package>
+		<package name="com.panda.project.hospital.model"></package>
+	</typeAliases>
+</configuration>
