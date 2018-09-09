@@ -3,3 +3,22 @@
 二：启动方式有两种，1，把项目加入servers中，用tomcat启动。2，也可使用maven启动项目 tomcat7:run
 三：成功启动之后，怎么访问呢？其访问路径为：localhost:8089:lay_system 这样就ok了。
 
+四：虽然项目能运行，但项目中报红叉，所以把红叉问题解决，解决方法如下：
+1，在pom.xml中添加了统一编译插件
+<!-- 解决maven编译问题 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
+2，修改了web.xml的版本，之前是2.5的，现在是3.0，这样整个项目已经没有报红叉，重现启动ok的!!!
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+version="3.0">
+
